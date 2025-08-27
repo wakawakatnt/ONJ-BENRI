@@ -1,3 +1,23 @@
+img {
+  width: 100%;
+}
+
+@media screen and (min-width: 960px) {
+  img {
+    max-width: 960px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #000;
+  }
+
+  p {
+    color: #fff;
+  }
+}
+
 html,
 body {
   margin: 0;
