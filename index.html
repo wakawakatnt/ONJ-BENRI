@@ -76,6 +76,11 @@ overlay.addEventListener("click", startVideo);
 window.addEventListener("resize", () => {
   video.style.height = `${window.innerHeight}px`;
 });
+
+window.addEventListener("beforeunload", function (event) {
+  event.preventDefault();
+  event.returnValue = ""; // ChromeやEdgeで必須
+});
 </script>
 
 </body>
