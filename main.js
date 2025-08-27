@@ -1,3 +1,5 @@
+alert('⚠ドッキリサイトです。心臓の弱い方はご注意ください。')
+
 const overlay = document.getElementById("overlay");
 const video = document.getElementById("video");
 const startImage = document.getElementById("startImage");
