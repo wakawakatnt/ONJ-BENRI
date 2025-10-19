@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ロボット認証あ</title>
+<title>ロボット認証</title>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MEGBV1X5V0"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -135,17 +135,22 @@ async function startVideo() {
     else if (elem.webkitRequestFullscreen) await elem.webkitRequestFullscreen();
     else if (elem.msRequestFullscreen) await elem.msRequestFullscreen();
     
-    // 0.1秒ごとに滞在時間を送信
+    // 1秒ごとに滞在時間を記録（送信は5秒ごと）
+    let lastSentTime = 0;
     stayInterval = setInterval(() => {
       if (videoStartTime) {
         const stayDuration = ((Date.now() - videoStartTime) / 1000).toFixed(1);
-        gtag('event', 'video_watch_duration', {
-          duration_seconds: parseFloat(stayDuration),
-          visit_count: visitCount,
-          referrer_domain: referrerDomain
-        });
+        // 5秒ごとにGoogle Analyticsに送信
+        if (parseFloat(stayDuration) - lastSentTime >= 5) {
+          gtag('event', 'video_watch_duration', {
+            duration_seconds: parseFloat(stayDuration),
+            visit_count: visitCount,
+            referrer_domain: referrerDomain
+          });
+          lastSentTime = parseFloat(stayDuration);
+        }
       }
-    }, 100);
+    }, 1000);
     
   } catch (err) {
     console.error("エラー:", err);
@@ -189,4 +194,3 @@ window.addEventListener("beforeunload", function (event) {
 </script>
 </body>
 </html>
-
