@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ロボット認証</title>
+<title>ロボット認証ｗ</title>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MEGBV1X5V0"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -91,16 +91,16 @@ gtag('event', 'page_view_with_visit_count', {
   referrer_domain: referrerDomain
 });
 
+// リファラー情報を取得（最初に定義）
+const referrer = document.referrer || 'direct';
+const referrerDomain = referrer !== 'direct' ? new URL(referrer).hostname : 'direct';
+
 // 動画再生開始時刻を記録
 let videoStartTime = null;
 let videoPlayed = false;
 
 // 滞在時間を定期的に送信（0.1秒ごと）
 let stayInterval = null;
-
-// リファラー情報を取得
-const referrer = document.referrer || 'direct';
-const referrerDomain = referrer ? new URL(referrer).hostname : 'direct';
 
 setTimeout(() => {
   startImage.style.display = "block";
