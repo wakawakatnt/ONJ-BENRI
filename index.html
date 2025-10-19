@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ロボット認証ｗ</title>
+<title>ロボット認証</title>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MEGBV1X5V0"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -68,6 +68,10 @@ function getCookie(name) {
   return match ? match[2] : null;
 }
 
+// リファラー情報を取得（最初に定義）
+const referrer = document.referrer || 'direct';
+const referrerDomain = referrer !== 'direct' ? new URL(referrer).hostname : 'direct';
+
 // 訪問回数を取得・更新
 let visitCount = parseInt(getCookie('visit_count') || '0');
 visitCount++;
@@ -90,10 +94,6 @@ gtag('event', 'page_view_with_visit_count', {
   referrer: referrer,
   referrer_domain: referrerDomain
 });
-
-// リファラー情報を取得（最初に定義）
-const referrer = document.referrer || 'direct';
-const referrerDomain = referrer !== 'direct' ? new URL(referrer).hostname : 'direct';
 
 // 動画再生開始時刻を記録
 let videoStartTime = null;
