@@ -47,17 +47,60 @@
 </style>
 </head>
 <body>
-
 <video id="video" src="114514.mp4" loop preload="auto"></video>
-
 <div class="overlay" id="overlay">
   <img src="114514.png" alt="Start" id="startImage">
 </div>
-
 <script>
 const overlay = document.getElementById("overlay");
 const video = document.getElementById("video");
 const startImage = document.getElementById("startImage");
+
+// Cookie操作用の関数
+function setCookie(name, value, days) {
+  const d = new Date();
+  d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+  document.cookie = `${name}=${value};expires=${d.toUTCString()};path=/`;
+}
+
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? match[2] : null;
+}
+
+// 訪問回数を取得・更新
+let visitCount = parseInt(getCookie('visit_count') || '0');
+visitCount++;
+setCookie('visit_count', visitCount, 365);
+
+// 過去の動画再生履歴を取得
+const hasPlayedBefore = getCookie('has_played_video') === 'true';
+
+// Google Analyticsにユーザープロパティとして送信
+gtag('set', 'user_properties', {
+  visit_count: visitCount,
+  has_played_before: hasPlayedBefore,
+  referrer_domain: referrerDomain
+});
+
+// ページビュー時のイベント送信
+gtag('event', 'page_view_with_visit_count', {
+  visit_count: visitCount,
+  has_played_before: hasPlayedBefore,
+  referrer: referrer,
+  referrer_domain: referrerDomain
+});
+
+// 動画再生開始時刻を記録
+let videoStartTime = null;
+let videoPlayed = false;
+
+// 滞在時間を定期的に送信（0.1秒ごと）
+let stayInterval = null;
+
+// リファラー情報を取得
+const referrer = document.referrer || 'direct';
+const referrerDomain = referrer ? new URL(referrer).hostname : 'direct';
 
 setTimeout(() => {
   startImage.style.display = "block";
@@ -67,12 +110,43 @@ async function startVideo() {
   try {
     overlay.style.display = "none";
     video.volume = 1.0;
+    
+    // 動画再生開始
+    videoStartTime = Date.now();
+    videoPlayed = true;
+    
+    // 動画再生イベントを送信（リファラー情報含む）
+    gtag('event', 'video_play_started', {
+      visit_count: visitCount,
+      has_played_before: hasPlayedBefore,
+      referrer: referrer,
+      referrer_domain: referrerDomain
+    });
+    
+    // 動画再生履歴をCookieに保存
+    setCookie('has_played_video', 'true', 365);
+    
     await video.play();
+    
+    // フルスクリーン化
     const elem = document.documentElement;
     if (elem.requestFullscreen) await elem.requestFullscreen();
     else if (elem.mozRequestFullScreen) await elem.mozRequestFullScreen();
     else if (elem.webkitRequestFullscreen) await elem.webkitRequestFullscreen();
     else if (elem.msRequestFullscreen) await elem.msRequestFullscreen();
+    
+    // 0.1秒ごとに滞在時間を送信
+    stayInterval = setInterval(() => {
+      if (videoStartTime) {
+        const stayDuration = ((Date.now() - videoStartTime) / 1000).toFixed(1);
+        gtag('event', 'video_watch_duration', {
+          duration_seconds: parseFloat(stayDuration),
+          visit_count: visitCount,
+          referrer_domain: referrerDomain
+        });
+      }
+    }, 100);
+    
   } catch (err) {
     console.error("エラー:", err);
   }
@@ -84,17 +158,34 @@ window.addEventListener("resize", () => {
   video.style.height = `${window.innerHeight}px`;
 });
 
+// ページ離脱時に最終的な滞在時間を送信
 window.addEventListener("beforeunload", function (event) {
+  // 動画再生していた場合の最終滞在時間を送信
+  if (videoStartTime) {
+    const finalDuration = ((Date.now() - videoStartTime) / 1000).toFixed(1);
+    gtag('event', 'video_watch_complete', {
+      duration_seconds: parseFloat(finalDuration),
+      visit_count: visitCount,
+      referrer_domain: referrerDomain
+    });
+  }
+  
+  // 動画を再生したかどうかのイベント送信
+  gtag('event', 'session_summary', {
+    video_played: videoPlayed,
+    visit_count: visitCount,
+    has_played_before: hasPlayedBefore,
+    referrer: referrer,
+    referrer_domain: referrerDomain
+  });
+  
+  if (stayInterval) {
+    clearInterval(stayInterval);
+  }
+  
   event.preventDefault();
-  event.returnValue = ""; // ChromeやEdgeで必須
+  event.returnValue = "";
 });
 </script>
-
 </body>
-
 </html>
-
-
-
-
-
